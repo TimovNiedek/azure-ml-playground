@@ -1,0 +1,34 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+display_name: f1_data_prep
+description: Simple dev pipeline to check data preparation
+experiment_name: f1_predictions_dev
+
+# <inputs_and_outputs>
+
+inputs:
+  raw_data:
+    type: uri_file
+    path: azureml:f1-data:4
+    mode: ro_mount
+outputs:
+  f1_data_cleaned:
+    mode: rw_mount
+# </inputs_and_outputs>
+
+# <jobs>
+settings:
+  default_datastore: azureml:ml_datastore
+  default_compute: azureml:cpu-cluster
+  continue_on_step_failure: false
+
+jobs:
+  prepare_data:
+    type: command
+    component: ./prepare_data.yml
+    inputs:
+      raw_data: ${{parent.inputs.raw_data}}
+    outputs:
+      cleaned_data: ${{parent.outputs.f1_data_cleaned}}
+
+# </jobs>

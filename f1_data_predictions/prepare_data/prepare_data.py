@@ -13,7 +13,9 @@ def prepare_data(
 ):
     print(f"Preparing data from {raw_data} to {output_data}")
     df = pd.read_csv(raw_data)
+    print(f"Data loaded: {df.shape[0]} rows")
     df = handle_missing_values(df)
+    print(f"Data cleaned: {df.shape[0]} rows")
     df.to_csv(output_data, index=False)
     print("Data prepared")
 
