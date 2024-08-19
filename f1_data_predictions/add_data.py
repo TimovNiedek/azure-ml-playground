@@ -1,11 +1,10 @@
+import dotenv
 import pandas as pd
-from utils import get_ml_client
-from azure.ai.ml.entities import Data
 from azure.ai.ml.constants import AssetTypes
-from dotenv import load_dotenv
+from azure.ai.ml.entities import Data
+from utils import get_ml_client
 
-load_dotenv()
-
+dotenv.load_dotenv()
 ml_client = get_ml_client()
 
 
