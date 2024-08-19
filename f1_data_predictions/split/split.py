@@ -11,7 +11,7 @@ def split_data(
     ],
     output_test_path: Annotated[str, typer.Argument(help="Path to save the test data")],
     seed: Annotated[
-        str, typer.Option(help="Seed used for random train / test split")
+        int, typer.Option(help="Seed used for random train / test split")
     ] = 42,
     test_size: Annotated[
         float, typer.Option(help="Fraction of the data to use as test set")

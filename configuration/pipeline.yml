@@ -12,8 +12,18 @@ inputs:
     path: azureml:f1-data:4
     mode: ro_mount
 outputs:
-  f1_data_cleaned:
-    mode: rw_mount
+  train_set:
+    mode: upload
+    type: uri_file
+    path: azureml://datastores/ml_datastore/paths/f1_data/train_data.csv
+    version: 1
+    name: train_data
+  test_set:
+    mode: upload
+    type: uri_file
+    path: azureml://datastores/ml_datastore/paths/f1_data/test_data.csv
+    version: 1
+    name: test_data
 # </inputs_and_outputs>
 
 # <jobs>
@@ -29,6 +39,14 @@ jobs:
     inputs:
       raw_data: ${{parent.inputs.raw_data}}
     outputs:
-      cleaned_data: ${{parent.outputs.f1_data_cleaned}}
+      cleaned_data:
+  split:
+    type: command
+    component: ./split.yml
+    inputs:
+      input_data: ${{parent.jobs.prepare_data.outputs.cleaned_data}}
+    outputs:
+      train_data: ${{parent.outputs.train_set}}
+      test_data:  ${{parent.outputs.test_set}}
 
 # </jobs>
