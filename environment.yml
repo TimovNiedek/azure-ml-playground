@@ -9,6 +9,7 @@ dependencies:
   - distlib=0.3.8=pyhd8ed1ab_0
   - expat=2.6.2=hcec6c5f_0
   - filelock=3.15.4=pyhd8ed1ab_0
+  - fsspec=2024.6.1=pyhff2d567_0
   - identify=2.6.0=pyhd8ed1ab_0
   - libcxx=14.0.6=h9765a3e_0
   - libffi=3.4.4=hecd8cb5_1

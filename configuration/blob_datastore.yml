@@ -2,5 +2,4 @@ $schema: https://azuremlschemas.azureedge.net/latest/azureBlob.schema.json
 name: ml_datastore
 type: azure_blob
 description: Datastore pointing to a ml-datastore blob container.
-account_name: timossafespace2594538305
 container_name: ml-datastore
