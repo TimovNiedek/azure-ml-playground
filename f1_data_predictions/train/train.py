@@ -3,6 +3,7 @@ from enum import Enum
 import mlflow
 import pandas as pd
 import typer
+from mlflow.models import infer_signature
 from sklearn.compose import make_column_transformer
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
@@ -59,7 +60,9 @@ def build_pipeline(
 
 
 def train(
-    input_train_path: Annotated[str, typer.Argument(help="Path to the train data")],
+    input_train_data_path: Annotated[
+        str, typer.Argument(help="Path to the train data")
+    ],
     output_model_path: Annotated[
         str, typer.Argument(help="Path to save the trained model")
     ],
@@ -73,11 +76,15 @@ def train(
         ),
     ] = 3,
 ):
-    df = pd.read_csv(input_train_path)
+    mlflow.autolog(log_models=False)
+    df = pd.read_csv(input_train_data_path)
     X_train, y_train = get_features_labels(df)
     pipeline = build_pipeline(task, threshold_for_unknown_category)
     pipeline.fit(X_train, y_train)
-    mlflow.sklearn.save_model(pipeline, output_model_path)
+    train_score = pipeline.score(X_train, y_train)
+    mlflow.log_metric("train_score", train_score)
+    signature = infer_signature(X_train, pipeline.predict(X_train))
+    mlflow.sklearn.save_model(pipeline, output_model_path, signature=signature)
 
 
 if __name__ == "__main__":

@@ -15,15 +15,14 @@ outputs:
   train_set:
     mode: upload
     type: uri_file
-    path: azureml://datastores/ml_datastore/paths/f1_data/train_data.csv
-    version: 1
-    name: train_data
   test_set:
     mode: upload
     type: uri_file
-    path: azureml://datastores/ml_datastore/paths/f1_data/test_data.csv
+  model:
+    mode: upload
+    type: mlflow_model
     version: 1
-    name: test_data
+    name: f1_model
 # </inputs_and_outputs>
 
 # <jobs>
@@ -48,5 +47,11 @@ jobs:
     outputs:
       train_data: ${{parent.outputs.train_set}}
       test_data:  ${{parent.outputs.test_set}}
-
+  train:
+    type: command
+    component: ./train.yml
+    inputs:
+      train_data: ${{parent.jobs.split.outputs.train_data}}
+    outputs:
+      model: ${{parent.outputs.model}}
 # </jobs>

@@ -4,4 +4,4 @@ az ml datastore create --file blob_datastore.yml --set credentials.account_key=$
 
 az ml compute create -n cpu-cluster --type amlcompute --min-instances 0 --max-instances 2
 
-az ml environment create --file conda_environment.yml
+az ml environment create --file docker_environment.yml --image $AZURE_CONTAINER_REGISTRY_NAME.azurecr.io/playground/f1-training-environment

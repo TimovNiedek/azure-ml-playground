@@ -1,0 +1,24 @@
+# <component>
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+name: train_f1_model
+display_name: Train F1 predictor
+version: 1
+type: command
+inputs:
+  train_data:
+    type: uri_file
+  task:
+    type: string
+    default: "classification"
+  threshold_for_unknown_category:
+    type: integer
+    default: 3
+outputs:
+  model:
+    type: mlflow_model
+    mode: upload
+code: ../f1_data_predictions/train
+environment: azureml:f1-predictions-env@latest
+command: >-
+  python train.py ${{inputs.train_data}} ${{outputs.model}} --task ${{inputs.task}} --threshold-for-unknown-category ${{inputs.threshold_for_unknown_category}}
+# </component>
