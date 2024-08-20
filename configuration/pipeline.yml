@@ -18,11 +18,6 @@ outputs:
   test_set:
     mode: upload
     type: uri_file
-  model:
-    mode: upload
-    type: mlflow_model
-    version: 1
-    name: f1_model
 # </inputs_and_outputs>
 
 # <jobs>
@@ -53,5 +48,5 @@ jobs:
     inputs:
       train_data: ${{parent.jobs.split.outputs.train_data}}
     outputs:
-      model: ${{parent.outputs.model}}
+      model:
 # </jobs>

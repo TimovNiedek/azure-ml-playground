@@ -76,7 +76,7 @@ def train(
         ),
     ] = 3,
 ):
-    mlflow.autolog(log_models=False)
+    mlflow.sklearn.autolog(log_models=False)
     df = pd.read_csv(input_train_data_path)
     X_train, y_train = get_features_labels(df)
     pipeline = build_pipeline(task, threshold_for_unknown_category)
@@ -84,7 +84,8 @@ def train(
     train_score = pipeline.score(X_train, y_train)
     mlflow.log_metric("train_score", train_score)
     signature = infer_signature(X_train, pipeline.predict(X_train))
-    mlflow.sklearn.save_model(pipeline, output_model_path, signature=signature)
+    mlflow.sklearn.log_model(pipeline, "f1_model", signature=signature)
+    mlflow.sklearn.save_model(pipeline, output_model_path)
 
 
 if __name__ == "__main__":
