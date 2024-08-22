@@ -4,12 +4,13 @@ import typer
 from azure.ai.ml import Input, load_component
 from azure.ai.ml.constants import AssetTypes
 from azure.ai.ml.dsl import pipeline
+from azure.ai.ml.entities import CronTrigger, JobSchedule, RecurrenceTrigger
 from azure.ai.ml.sweep import BanditPolicy, Choice, LogUniform, RandomSamplingAlgorithm
 from utils import get_ml_client
 
 ml_client = get_ml_client()
 
-app = typer.Typer()
+app = typer.Typer(pretty_exceptions_enable=False)
 
 
 def build_pipeline():
@@ -98,6 +99,37 @@ def sweep():
     print("Monitor your job at", aml_url)
 
     return returned_sweep_job
+
+
+@app.command()
+def schedule(
+    frequency: str | None = None, interval: int | None = None, cron: str | None = None
+):
+    if cron is not None:
+        recurrence = CronTrigger(expression=cron)
+    elif frequency is not None and interval is not None:
+        recurrence = RecurrenceTrigger(frequency=frequency, interval=interval)
+    else:
+        raise ValueError("Either cron or frequency and interval must be provided")
+    pipeline_job = build_pipeline()
+    job_schedule = JobSchedule(
+        name="f1-training-pipeline-schedule",
+        create_job=pipeline_job,
+        trigger=recurrence,
+    )
+    job_schedule: JobSchedule = ml_client.schedules.begin_create_or_update(
+        schedule=job_schedule
+    ).result()
+    print(
+        f"Job schedule created with id: {job_schedule.id} and name: {job_schedule.name}"
+    )
+
+
+@app.command()
+def remove_schedule():
+    ml_client.schedules.begin_disable(name="f1-training-pipeline-schedule").result()
+    ml_client.schedules.begin_delete(name="f1-training-pipeline-schedule").result()
+    print("Job schedule deleted")
 
 
 if __name__ == "__main__":
