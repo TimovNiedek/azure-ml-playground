@@ -17,7 +17,7 @@ outputs:
   model:
     type: mlflow_model
     mode: upload
-code: ../f1_data_predictions/train
+code: ./train
 environment: azureml:f1-predictions-env@latest
 command: >-
   python train.py ${{inputs.train_data}} ${{outputs.model}} --task ${{inputs.task}} --threshold-for-unknown-category ${{inputs.threshold_for_unknown_category}}

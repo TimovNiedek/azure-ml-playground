@@ -2,7 +2,7 @@
 
 all: build setup train
 
-build: configuration Dockerfile
+build: configure-cli Dockerfile
 	echo "Building Docker image"
 	source .env && \
 	poetry export -o requirements.txt && \
@@ -11,12 +11,12 @@ build: configuration Dockerfile
 
 setup:
 	echo "Setting up Azure resources"
-	source .env && cd configuration && source setup.sh
+	source .env && cd configure-cli && source setup.sh
 
 train:
 	echo "Starting training job"
-	source .env && az ml job create --file configuration/pipeline.yml
+	source .env && az ml job create --file f1_data_predictions/pipeline.yml
 
 clean:
 	echo "Destroying Azure resources"
-	source .env && cd configuration && source destroy.sh
+	source .env && cd configure-cli && source destroy.sh

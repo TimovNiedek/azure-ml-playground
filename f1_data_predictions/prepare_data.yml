@@ -10,7 +10,7 @@ inputs:
 outputs:
   cleaned_data:
     type: uri_file
-code: ../f1_data_predictions/prepare_data
+code: ./prepare_data
 environment: azureml:f1-predictions-env@latest
 command: >-
   python prepare_data.py ${{inputs.raw_data}} ${{outputs.cleaned_data}}
