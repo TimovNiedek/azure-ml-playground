@@ -1,12 +1,21 @@
 from pathlib import Path
 
+import pandas as pd
 import typer
 from azure.ai.ml import Input, load_component
 from azure.ai.ml.constants import AssetTypes
 from azure.ai.ml.dsl import pipeline
-from azure.ai.ml.entities import CronTrigger, JobSchedule, Model, RecurrenceTrigger
+from azure.ai.ml.entities import (
+    CronTrigger,
+    Data,
+    JobSchedule,
+    Model,
+    RecurrenceTrigger,
+)
 from azure.ai.ml.sweep import BanditPolicy, Choice, LogUniform, RandomSamplingAlgorithm
 from utils import get_ml_client
+
+from f1_data_predictions.rai.rai import run_rai
 
 ml_client = get_ml_client()
 
@@ -143,6 +152,54 @@ def register_model(job_id: str):
 
     registered_model = ml_client.models.create_or_update(model)
     print(registered_model)
+
+
+def make_parquet_asset(
+    df: pd.DataFrame, local_path: str, name: str, version: str
+) -> str:
+    df.to_parquet(Path(local_path) / f"{name}.parquet", engine="pyarrow")
+
+    data = Data(
+        path=local_path,
+        type=AssetTypes.MLTABLE,
+        description=f"F1 {name} data",
+        name=name + "_parquet",
+        version=version,
+    )
+    ml_client.data.create_or_update(data)
+    return data.name
+
+
+@app.command()
+def prepare_rai(
+    train_data_dir: str, test_data_dir: str, target_column_name: str = "pointsFinish"
+):
+    train_data = ml_client.data.get(
+        name="train_data",
+        version=2,
+    )
+    test_data = ml_client.data.get(
+        name="test_data",
+        version=2,
+    )
+
+    drop_target_cols = ["positionOrder", "pointsFinish", "wonRace", "podiumFinish"]
+    drop_target_cols.remove(target_column_name)
+    train_data = pd.read_csv(train_data.path)
+    train_data = train_data.drop(columns=drop_target_cols)
+    test_data = pd.read_csv(test_data.path)
+    test_data = test_data.drop(columns=drop_target_cols)
+
+    try:
+        make_parquet_asset(train_data, train_data_dir, "train_data", "2")
+        make_parquet_asset(test_data, test_data_dir, "test_data", "2")
+    except Exception:
+        print("RAI data already exists")
+
+    run_rai(
+        "azureml:train_data_parquet:2",
+        "azureml:test_data_parquet:2",
+    )
 
 
 if __name__ == "__main__":
