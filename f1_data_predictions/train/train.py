@@ -95,7 +95,9 @@ def train(
         float, typer.Option(help="Regularization rate for SVM")
     ] = 1.0,
 ):
+    mlflow.start_run()
     mlflow.sklearn.autolog(log_models=False)
+
     df = pd.read_csv(input_train_data_path)
     X_train, y_train = get_features_labels(df, target_column)
     pipeline = build_pipeline(
@@ -107,6 +109,7 @@ def train(
     signature = infer_signature(X_train, pipeline.predict(X_train))
     mlflow.sklearn.log_model(pipeline, "f1_model", signature=signature)
     mlflow.sklearn.save_model(pipeline, output_model_path)
+    mlflow.end_run()
 
 
 if __name__ == "__main__":

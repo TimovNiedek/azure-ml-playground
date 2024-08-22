@@ -13,6 +13,12 @@ inputs:
   threshold_for_unknown_category:
     type: integer
     default: 3
+  svm_kernel:
+    type: string
+    default: "rbf"
+  svm_reg_rate:
+    type: number
+    default: 1.0
 outputs:
   model:
     type: mlflow_model

@@ -15,8 +15,11 @@ setup:
 
 train:
 	echo "Starting training job"
-	#source .env && az ml job create --file f1_data_predictions/pipeline.yml
-	source .env && poetry run python f1_data_predictions/run_pipeline.py
+	source .env && poetry run python f1_data_predictions/run_pipeline.py train
+
+sweep:
+	echo "Starting hyperparameter sweep"
+	source .env && cd f1_data_predictions && poetry run python run_pipeline.py sweep
 
 clean:
 	echo "Destroying Azure resources"
