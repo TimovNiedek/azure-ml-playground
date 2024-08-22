@@ -6,7 +6,7 @@ import typer
 from mlflow.models import infer_signature
 from sklearn.compose import make_column_transformer
 from sklearn.pipeline import Pipeline, make_pipeline
-from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.svm import SVC, SVR
 from typing_extensions import Annotated
 
@@ -39,7 +39,10 @@ def get_features_labels(
 
 
 def build_pipeline(
-    task: Task = Task.classification, threshold_for_unknown_category: int = 3
+    task: Task = Task.classification,
+    threshold_for_unknown_category: int = 3,
+    kernel: str = "rbf",
+    reg_rate: float = 1.0,
 ) -> Pipeline:
     column_transformer = make_column_transformer(
         (
@@ -49,12 +52,16 @@ def build_pipeline(
             ),
             CATEGORICAL_COLS,
         ),
-        (MinMaxScaler(), NUMERICAL_COLS),
+        (StandardScaler(), NUMERICAL_COLS),
     )
     if task == Task.classification:
-        pipeline = make_pipeline(column_transformer, SVC(gamma="auto"))
+        pipeline = make_pipeline(
+            column_transformer, SVC(gamma="auto", C=1 / reg_rate, kernel=kernel)
+        )
     else:
-        pipeline = make_pipeline(column_transformer, SVR(gamma="auto"))
+        pipeline = make_pipeline(
+            column_transformer, SVR(gamma="auto", C=1 / reg_rate, kernel=kernel)
+        )
 
     return pipeline
 
@@ -66,6 +73,12 @@ def train(
     output_model_path: Annotated[
         str, typer.Argument(help="Path to save the trained model")
     ],
+    target_column: Annotated[
+        str,
+        typer.Option(
+            help=f"Column to predict, choose from {TARGET_COLS}", case_sensitive=False
+        ),
+    ] = "pointsFinish",
     task: Annotated[
         Task, typer.Option(help="Task type", case_sensitive=False)
     ] = Task.classification,
@@ -75,11 +88,19 @@ def train(
             help="Categories below this threshold are grouped as 'infrequent' category"
         ),
     ] = 3,
+    svm_kernel: Annotated[
+        str, typer.Option(help="SVM kernel type", case_sensitive=False)
+    ] = "rbf",
+    svm_reg_rate: Annotated[
+        float, typer.Option(help="Regularization rate for SVM")
+    ] = 1.0,
 ):
     mlflow.sklearn.autolog(log_models=False)
     df = pd.read_csv(input_train_data_path)
-    X_train, y_train = get_features_labels(df)
-    pipeline = build_pipeline(task, threshold_for_unknown_category)
+    X_train, y_train = get_features_labels(df, target_column)
+    pipeline = build_pipeline(
+        task, threshold_for_unknown_category, svm_kernel, svm_reg_rate
+    )
     pipeline.fit(X_train, y_train)
     train_score = pipeline.score(X_train, y_train)
     mlflow.log_metric("train_score", train_score)
