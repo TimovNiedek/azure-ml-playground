@@ -4,7 +4,7 @@ import typer
 from azure.ai.ml import Input, load_component
 from azure.ai.ml.constants import AssetTypes
 from azure.ai.ml.dsl import pipeline
-from azure.ai.ml.entities import CronTrigger, JobSchedule, RecurrenceTrigger
+from azure.ai.ml.entities import CronTrigger, JobSchedule, Model, RecurrenceTrigger
 from azure.ai.ml.sweep import BanditPolicy, Choice, LogUniform, RandomSamplingAlgorithm
 from utils import get_ml_client
 
@@ -130,6 +130,19 @@ def remove_schedule():
     ml_client.schedules.begin_disable(name="f1-training-pipeline-schedule").result()
     ml_client.schedules.begin_delete(name="f1-training-pipeline-schedule").result()
     print("Job schedule deleted")
+
+
+@app.command()
+def register_model(job_id: str):
+    model = Model(
+        path=f"azureml://jobs/{job_id}/outputs/artifacts/paths/f1_model/",
+        type=AssetTypes.MLFLOW_MODEL,
+        name="f1-model",
+        description="Model for predicting outcome of F1 races.",
+    )
+
+    registered_model = ml_client.models.create_or_update(model)
+    print(registered_model)
 
 
 if __name__ == "__main__":
