@@ -1,0 +1,17 @@
+name: azure_ml_playground
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python==3.12.2
+  - pre-commit
+  - fsspec
+  - scikit-learn
+  - matplotlib
+  - jupyter
+  - typer
+  - mlflow
+  - pip
+  - python-dotenv
+  - pandas
+  - microsoft::azure-ai-ml

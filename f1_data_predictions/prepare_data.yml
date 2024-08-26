@@ -1,0 +1,17 @@
+# <component>
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+name: prep_f1_data
+display_name: PrepF1Data
+version: 1
+type: command
+inputs:
+  raw_data:
+    type: uri_file
+outputs:
+  cleaned_data:
+    type: uri_file
+code: ./prepare_data
+environment: azureml:f1-predictions-env@latest
+command: >-
+  python prepare_data.py ${{inputs.raw_data}} ${{outputs.cleaned_data}}
+# </component>
